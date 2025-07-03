@@ -1,0 +1,106 @@
+<div class="card">
+    <div class="card-header">
+      <h4>Tasks</h4>
+    </div>
+    <div class="card-body">
+      <!-- Add Task Form -->
+       <h5>{{actionType()}} Task</h5>
+      <div class="mb-4">        
+        <form #form="ngForm" (submit)="saveTask()" (reset)="resetTask()" class="row g-3">
+          <div class="col-md-6">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" #title="ngModel" [(ngModel)]="newTask.title" name="title" required>
+            @if((title.touched || title.dirty) && title.errors?.["required"]){                
+                <span class="text-danger">Missing required value.</span>
+             }    
+        </div>
+          <div class="col-md-6">
+            <label for="priority" class="form-label">Priority</label>
+            <select class="form-select" id="priority" [(ngModel)]="newTask.priority" name="priority">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" #description="ngModel" [(ngModel)]="newTask.description" name="description" rows="2" required></textarea>
+            @if((description.touched || description.dirty) && description.errors?.["required"]){                
+                <span class="text-danger">Missing required value.</span>
+             }    
+        </div>
+          <div class="col-md-4"> 
+            <label for="" class="form-label">Due Date</label>           
+            <div class="form-group position-relative">
+                <input matInput 
+                [(ngModel)]="newTask.dueDate"
+                    [matDatepicker]="picker" 
+                        class="form-control"
+                        placeholder="Choose a due Date">
+                    <mat-datepicker-toggle matSuffix [for]="picker" class="position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
+                    
+                    </mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </div>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid==true?true:false">Save Task</button>
+            <button type="reset" class="btn btn-outline-danger ms-2">Reset</button>  
+          </div>
+        </form>
+      </div>
+  
+      <!-- Task List -->
+       <h5>Task List</h5>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Priority</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of tasks" [id]="'task-' + task.id" [class.table-success]="task.isCompleted">
+              <td>{{ task.title }}</td>
+              <td>{{ task.description }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-danger': task.priority === 'High',
+                  'bg-warning': task.priority === 'Medium',
+                  'bg-success': task.priority === 'Low'
+                }">
+                  {{ task.priority }}
+                </span>
+              </td>
+              <td>{{ task.dueDate | date:'MM/dd/YYYY' }}</td>
+              <td>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" 
+                         [checked]="task.isCompleted" 
+                         (change)="toggleStatus(task)">
+                  <label class="form-check-label">
+                    {{ task.isCompleted ? 'Completed' : 'Pending' }}
+                  </label>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex">
+                <button class="btn btn-sm btn-outline-primary" (click)="editTask(task.id)">
+                  Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger ms-1" (click)="deleteTask(task.id)">
+                  Delete
+                </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

@@ -1,8 +1,37 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = "_Layout";
+    ViewData["Title"] = "Task Management";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4"> 
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Angular app container with loading indicator -->
+            <app-root>
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading application...</p>
+                </div>
+            </app-root>
+        </div>
+    </div>
 </div>
+
+@section Styles {
+    <!-- Angular styles with cache busting -->
+    <link href="~/angular-app/styles.css" rel="stylesheet" asp-append-version="true" />
+
+    <!-- Additional task-specific styles -->
+    @* <link href="~/css/tasks.css" rel="stylesheet" asp-append-version="true" /> *@
+}
+
+@section Scripts {
+    <!-- Angular files (load first) -->
+    <script src="~/angular-app/runtime.js" defer asp-append-version="true"></script>
+    <script src="~/angular-app/polyfills.js" defer asp-append-version="true"></script>
+    <script src="~/angular-app/main.js" defer asp-append-version="true"></script>
+
+    
+}
