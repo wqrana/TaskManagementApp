@@ -5,8 +5,17 @@ namespace TaskManagementWeb.Controllers
 {
     public class HomeController : Controller
     {
-       public IActionResult Index()
+        private readonly IConfiguration configuration;
+
+        public HomeController(IConfiguration configuration)
         {
+            this.configuration = configuration;
+        }
+             
+
+        public IActionResult Index()
+        {
+            ViewData["apiBaseUrl"] = configuration.GetSection("APIBaseURL").Value;
             return View();
         }
 

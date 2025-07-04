@@ -1,0 +1,7 @@
+<div id="divMainAlert" class="alert alert-dismissible " [style]="{'display':message!=''?'block':'none'}" [class]="{'alert-success':alertType=='Success', 'alert-danger':alertType=='Error','alert-info':alertType==''}" role="alert">
+    <strong>Alert!</strong><span id="spanMainAlert">  {{message}} </span>
+    <button type="button" class="close btn btn-sm float-end" data-bs-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+

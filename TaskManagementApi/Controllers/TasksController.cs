@@ -43,7 +43,26 @@ namespace TaskManagementApi.Controllers
             await _taskRepository.AddTaskAsync(task);
             return CreatedAtAction("GetTask", new { id = task.Id }, task);
         }
+        [HttpPut("{id}/toggle")]
+        public async Task<IActionResult> ToggleTask(int id)
+        {
+            var task = await _taskRepository.GetTaskByIdAsync(id);
+            if (task == null)
+            {
+                return NotFound();
+            }
+            task.IsCompleted = !task.IsCompleted;
+            try
+            {
+                await _taskRepository.UpdateTaskAsync(task);
+            }
+            catch
+            {
+                return BadRequest();
+            }
 
+            return NoContent();
+        }
         // PUT: api/Tasks/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTask(int id, TaskItem task)

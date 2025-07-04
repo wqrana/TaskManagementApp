@@ -1,49 +1,52 @@
 
-import { Component, signal, Signal } from '@angular/core';
+import { Component, signal, ViewChild } from '@angular/core';
 import { TaskService } from '../../services/taskService';
 import { Task } from '../../models/task';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {DateFormatPipe} from '../../pipes/date-format-pipe'
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ViewportScroller } from '@angular/common';
+import {PageAlert} from '../../shares/page-alert/page-alert';
+
 @Component({
   selector: 'app-task-list',  
   templateUrl: './app-task-list.html',
   styleUrl: './app-task-list.css',
-  imports: [FormsModule, CommonModule,MatDatepickerModule,MatInputModule,MatNativeDateModule]
+  imports: [PageAlert,FormsModule, CommonModule,MatDatepickerModule,MatInputModule,MatNativeDateModule]
   
 })
 export class AppTaskList {
+message:string="";
+alertType:string="";
 tasks: Task[] = [];
 newTask: Task = this.initTask();
 actionType = signal<string>("Add"); 
-
+@ViewChild('form') form!: NgForm;
   constructor(private taskService: TaskService,private viewportScroller: ViewportScroller) {}
  
   ngOnInit(): void {
   
     this.loadTasks();
   }
-
   loadTasks(): void {
     this.taskService.getTasks().subscribe(tasks => {
       this.tasks = tasks;
+       this.resetTask();
     });
   }
   saveTask():void{
     if(this.actionType()=="Add"){
       this.taskService.addTask(this.newTask).subscribe(() => {
-      this.loadTasks();
-      this.resetTask();
+      this.loadTasks();      
+      this.showAlertMessage("Success","Task is added successfully.");
     });
     }
     else{
       this.taskService.updateTask(this.newTask).subscribe(() => {
-      this.loadTasks();
-      this.resetTask();
+      this.loadTasks();     
+      this.showAlertMessage("Success","Task is updated successfully.");
     });
   }
 }
@@ -58,26 +61,22 @@ editTask(id:number):void{
 
 }
 
-  toggleStatus(task: Task): void {
-    // Using jQuery for the toggle effect
-    // $(`#task-${task.id}`).fadeOut(200, () => {
-    //   task.isCompleted = !task.isCompleted;
-    //   this.taskService.updateTask(task).subscribe(() => {
-    //     $(`#task-${task.id}`).fadeIn(200);
-    //   });
-    // });
-  }
-
   deleteTask(id: number): void {
     if (confirm('Are you sure you want to delete this task?')) {
       this.taskService.deleteTask(id).subscribe(() => {
-        this.loadTasks();
+        this.loadTasks();        
+        this.showAlertMessage("Success","Task is deleted successfully.");
       });
     }
   }
   resetTask(){
+    
     this.newTask = this.initTask();
     this.actionType.set("Add");
+     if (this.form) {
+     this.form.resetForm(this.newTask);
+    }
+   
   }
  initTask():Task{
    return this.newTask = {
@@ -91,7 +90,15 @@ editTask(id:number):void{
       
     };
   }
-   scrollToTop() {
+  scrollToTop() {
     this.viewportScroller.scrollToPosition([0, 0]);
+  }
+  showAlertMessage(type:string, msg:string){
+    this.message="";
+    setTimeout(() => {
+      this.scrollToTop();
+      this.message=msg;
+      this.alertType=type;  
+    },500);
   }
 }

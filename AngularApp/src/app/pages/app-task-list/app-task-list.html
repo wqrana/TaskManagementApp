@@ -1,3 +1,4 @@
+<page-alert [message]="message" [alertType]="alertType"></page-alert>
 <div class="card">
     <div class="card-header">
       <h4>Tasks</h4>
@@ -10,9 +11,11 @@
           <div class="col-md-6">
             <label for="title" class="form-label">Title</label>
             <input type="text" class="form-control" id="title" #title="ngModel" [(ngModel)]="newTask.title" name="title" required>
-            @if((title.touched || title.dirty) && title.errors?.["required"]){                
-                <span class="text-danger">Missing required value.</span>
-             }    
+           @if(title.invalid && (title.touched || form.submitted)) {
+                @if(title.errors?.["required"]) {
+                    <span class="text-danger">Missing required value.</span>
+                }
+            }  
         </div>
           <div class="col-md-6">
             <label for="priority" class="form-label">Priority</label>
@@ -25,23 +28,31 @@
           <div class="col-12">
             <label for="description" class="form-label">Description</label>
             <textarea class="form-control" id="description" #description="ngModel" [(ngModel)]="newTask.description" name="description" rows="2" required></textarea>
-            @if((description.touched || description.dirty) && description.errors?.["required"]){                
-                <span class="text-danger">Missing required value.</span>
-             }    
+           @if(description.invalid && (description.touched || form.submitted)) {
+                @if(description.errors?.["required"]) {
+                    <span class="text-danger">Missing required value.</span>
+                }
+            }   
         </div>
           <div class="col-md-4"> 
             <label for="" class="form-label">Due Date</label>           
             <div class="form-group position-relative">
-                <input matInput 
+                <input matInput #dueDate="ngModel" name="dueDate"
                 [(ngModel)]="newTask.dueDate"
                     [matDatepicker]="picker" 
                         class="form-control"
-                        placeholder="Choose a due Date">
+                        placeholder="Choose a due Date" required>
                     <mat-datepicker-toggle matSuffix [for]="picker" class="position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
                     
                     </mat-datepicker-toggle>
                     <mat-datepicker #picker></mat-datepicker>
+                     @if(dueDate.invalid && (dueDate.touched || form.submitted)) {
+                        @if(dueDate.errors?.['required']) {
+                        <span class="text-danger">Due date is required</span>
+                        }
+                    }
                 </div>
+               
           </div>
           <div class="col-md-3 d-flex align-items-end">
             <button type="submit" class="btn btn-primary" [disabled]="form.invalid==true?true:false">Save Task</button>
@@ -80,10 +91,9 @@
               <td>{{ task.dueDate | date:'MM/dd/YYYY' }}</td>
               <td>
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" 
-                         [checked]="task.isCompleted" 
-                         (change)="toggleStatus(task)">
-                  <label class="form-check-label">
+                  <input class="form-check-input toggleStatus" type="checkbox" [value]="task.id"
+                         [checked]="task.isCompleted" >
+                  <label class="form-check-label task-status">
                     {{ task.isCompleted ? 'Completed' : 'Pending' }}
                   </label>
                 </div>
