@@ -8,9 +8,9 @@ namespace TaskManagementApi.Repository
     {        
             Task<IEnumerable<TaskItem>> GetAllTasksAsync();
             Task<TaskItem> GetTaskByIdAsync(int id);
-            Task AddTaskAsync(TaskItem task);
-            Task UpdateTaskAsync(TaskItem task);
-            Task DeleteTaskAsync(int id);
+            Task<TaskItem> AddTaskAsync(TaskItem task);
+            Task<TaskItem> UpdateTaskAsync(TaskItem task);
+            Task<bool> DeleteTaskAsync(int id);
         
     }
     public class TaskRepository : ITaskRepository
@@ -27,38 +27,44 @@ namespace TaskManagementApi.Repository
             return await _context.TaskItems.ToListAsync();
         }
 
-        public async Task<TaskItem> GetTaskByIdAsync(int id)
+        public async Task<TaskItem?> GetTaskByIdAsync(int id)
         {
-            return await _context.TaskItems.FindAsync(id);
+            var task = await _context.TaskItems.AsNoTracking().
+                                        FirstOrDefaultAsync(t => t.Id == id);
+            return task;
         }
 
-        public async Task AddTaskAsync(TaskItem task)
+        public async Task<TaskItem> AddTaskAsync(TaskItem task)
         {
-            task.CreatedAt = DateTime.Now;
-            task.UpdatedAt = DateTime.Now;
+            task.CreatedAt = DateTime.Now;           
             task.Category = CategorizeTask(task.Description);
             await _context.TaskItems.AddAsync(task);
             await _context.SaveChangesAsync();
+            return task;
         }
 
-        public async Task UpdateTaskAsync(TaskItem task)
+        public async Task<TaskItem> UpdateTaskAsync(TaskItem task)
         {
             task.UpdatedAt = DateTime.Now;
             task.Category = CategorizeTask(task.Description);
             _context.Entry(task).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            return task;
         }
 
-        public async Task DeleteTaskAsync(int id)
+        public async Task<bool> DeleteTaskAsync(int id)
         {
+            var isDeleted = false;
             var task = await _context.TaskItems.FindAsync(id);
             if (task != null)
             {
                 _context.TaskItems.Remove(task);
                 await _context.SaveChangesAsync();
+                isDeleted = true;
             }
+            return isDeleted;
         }
-
+        // mockup for key word matching for Task category
         private string CategorizeTask(string description)
         {
             if (string.IsNullOrEmpty(description))

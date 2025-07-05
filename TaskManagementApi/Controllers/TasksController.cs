@@ -9,7 +9,7 @@ namespace TaskManagementApi.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskRepository _taskRepository;
-
+        private string _badRequestMsg = "";
         public TasksController(ITaskRepository taskRepository)
         {
             _taskRepository = taskRepository;
@@ -17,31 +17,57 @@ namespace TaskManagementApi.Controllers
 
         // GET: api/Tasks
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks()
+        public async Task<IActionResult> GetTasks()
         {
-            return Ok(await _taskRepository.GetAllTasksAsync());
+            try
+            {
+                var tasks = await _taskRepository.GetAllTasksAsync();
+
+                return Ok(tasks);
+            }
+            catch (Exception ex) {
+                _badRequestMsg= ex.Message;
+            }
+
+            return BadRequest(_badRequestMsg);
         }
 
         // GET: api/Tasks/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TaskItem>> GetTask(int id)
+        public async Task<IActionResult> GetTask(int id)
         {
-            var task = await _taskRepository.GetTaskByIdAsync(id);
-
-            if (task == null)
+            try
             {
-                return NotFound();
-            }
+                var task = await _taskRepository.GetTaskByIdAsync(id);
 
-            return task;
+                if (task == null)
+                {
+                    return NotFound("Task not Found.");
+                }
+
+                return Ok(task);
+            }
+            catch (Exception ex)
+            {
+                _badRequestMsg= ex.Message;
+            }
+            return BadRequest(_badRequestMsg);
         }
 
         // POST: api/Tasks
         [HttpPost]
-        public async Task<ActionResult<TaskItem>> PostTask(TaskItem task)
+        public async Task<IActionResult> PostTask(TaskItem task)
         {
-            await _taskRepository.AddTaskAsync(task);
-            return CreatedAtAction("GetTask", new { id = task.Id }, task);
+            try
+            {
+               var newtask= await _taskRepository.AddTaskAsync(task);
+               return Ok(newtask);
+            }
+            catch (Exception ex)
+            {
+                _badRequestMsg = ex.Message;
+            }
+            return BadRequest(_badRequestMsg);
         }
         [HttpPut("{id}/toggle")]
         public async Task<IActionResult> ToggleTask(int id)
@@ -49,19 +75,20 @@ namespace TaskManagementApi.Controllers
             var task = await _taskRepository.GetTaskByIdAsync(id);
             if (task == null)
             {
-                return NotFound();
+                return NotFound("Task not found");
             }
             task.IsCompleted = !task.IsCompleted;
             try
             {
-                await _taskRepository.UpdateTaskAsync(task);
+                var updatedTask=await _taskRepository.UpdateTaskAsync(task);
+                return Ok(updatedTask);
             }
-            catch
-            {
-                return BadRequest();
+            catch(Exception ex) {
+            
+              _badRequestMsg = ex.Message;
             }
 
-            return NoContent();
+            return BadRequest(_badRequestMsg);
         }
         // PUT: api/Tasks/5
         [HttpPut("{id}")]
@@ -69,31 +96,43 @@ namespace TaskManagementApi.Controllers
         {
             if (id != task.Id)
             {
-                return BadRequest();
+                return BadRequest("Invalid Task reference.");
             }
 
             try
             {
-                await _taskRepository.UpdateTaskAsync(task);
-            }
-            catch
-            {
                 if (await _taskRepository.GetTaskByIdAsync(id) == null)
                 {
-                    return NotFound();
+                    return NotFound("Task not found.");
                 }
-                throw;
+                var updatedTask=await _taskRepository.UpdateTaskAsync(task);
+                return Ok(updatedTask);
+            }
+            catch( Exception ex) {
+             _badRequestMsg=ex.Message;
             }
 
-            return NoContent();
+            return BadRequest(_badRequestMsg);
         }
 
         // DELETE: api/Tasks/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
-            await _taskRepository.DeleteTaskAsync(id);
-            return NoContent();
+            try
+            {
+               var isDeleted= await _taskRepository.DeleteTaskAsync(id);
+                if(isDeleted == false)
+                {
+                    return NotFound("Task not found for deletion.");
+                }
+                return Ok(isDeleted);
+            }
+            catch (Exception ex)
+            {
+                _badRequestMsg = ex.Message;
+            }
+            return BadRequest(_badRequestMsg);
         }
     }
 }
